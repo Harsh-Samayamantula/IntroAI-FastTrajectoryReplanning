@@ -5,8 +5,6 @@ class GridWorld:
         self.cols = columns
         self.rows = rows
         self.valid_grid_world = False
-        # self.white = 0
-        # self.black = 0
 
     def make_grid(self):
         self.grid = []
@@ -44,10 +42,10 @@ class GridWorld:
     
         # Explore neighbors in a specific order: up, right, down, left
         
-        self.dfs(grid, row - 1, col, visited)  # Up
-        self.dfs(grid, row, col + 1, visited)  # Right
-        self.dfs(grid, row + 1, col, visited)  # Down
-        self.dfs(grid, row, col - 1, visited)  # Left
+        self.dfs_recursive(grid, row - 1, col, visited)  # Up
+        self.dfs_recursive(grid, row, col + 1, visited)  # Right
+        self.dfs_recursive(grid, row + 1, col, visited)  # Down
+        self.dfs_recursive(grid, row, col - 1, visited)  # Left
     
     def dfs_iterative(self, grid, start_row, start_col, visited):
         stack = []
@@ -73,9 +71,8 @@ class GridWorld:
             stack.append((row, col - 1))  # Left
 
     def print_grid(self):
-        # print(self.grid)
         x = PrettyTable()
         x.field_names = [f'{i}' for i in range(0, self.cols)]
         x.add_rows(self.grid)
         print(x)
-        # print(self.white, self.black)
+
