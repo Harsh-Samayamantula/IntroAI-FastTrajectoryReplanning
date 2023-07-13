@@ -59,6 +59,8 @@ test_get_neighbors()
 import numpy as np
 import heapq
 import random
+from GridWorld import GridWorld
+
 
 class Cell:
     def __init__(self, x, y, type):
@@ -91,18 +93,18 @@ def heuristic(state, end_state):
     # Use Manhattan distance for heuristic
     return abs(state.cell.x - end_state.cell.x) + abs(state.cell.y - end_state.cell.y)
 
-def create_grid(rows, cols, obstacle_probability):
-    grid = []
-    for i in range(rows):
-        grid_row = []
-        for j in range(cols):
-            if np.random.random() < obstacle_probability:
-                cell_type = 'X'
-            else:
-                cell_type = '0'
-            grid_row.append(Cell(i, j, cell_type))
-        grid.append(grid_row)
-    return grid
+# def create_grid(rows, cols, obstacle_probability):
+#     grid = []
+#     for i in range(rows):
+#         grid_row = []
+#         for j in range(cols):
+#             if np.random.random() < obstacle_probability:
+#                 cell_type = 'X'
+#             else:
+#                 cell_type = '0'
+#             grid_row.append(Cell(i, j, cell_type))
+#         grid.append(grid_row)
+#     return grid
 
 def print_grid(grid):
     for row in grid:
@@ -120,7 +122,7 @@ def print_path(grid, path):
             elif cell.type == 'X':
                 print('X', end=' ')
             else:
-                print('0', end=' ')
+                print(' ', end=' ')
         print()
 
 def reconstruct_path(state):
@@ -178,26 +180,33 @@ def backward_astar(grid, start_cell, end_cell, max_iterations=10000):
     else:
         print("No Path Found")
     return None
-"""
+
 def test_backward_astar():
     global grid
-    for i in range(4):
-        grid = create_grid(11, 11, 0.3)
-        start_cell = grid[10][10]
-        end_cell = grid[0][0]
 
-        print("Initial Grid:")
-        print_grid(grid)
+    valid_gridworlds_arr = []
+    while len(valid_gridworlds_arr) < 1:
+        x = GridWorld(21, 21)
+        x.make_grid()
+        x.is_valid_grid_world()
+        if(x.valid_grid_world):
+            valid_gridworlds_arr.append(x)
+    # for i in range(1):
+    example_grid = valid_gridworlds_arr[0]
+    start_cell = Cell(20, 20, " ")
+    end_cell = Cell(20, 20, " ")
+    example_grid.print_grid()
 
-        path = backward_astar(grid, start_cell, end_cell)
+    grid = example_grid.grid
 
-        if path is None:
-            print("No Path Found")
-            print_grid(grid)
-        else:
-            print("Target Reached")
-            print_path(grid, path)
+    path = backward_astar(example_grid.grid, start_cell, end_cell)
+
+    if path is None:
+        print("No Path Found")
+        print_grid(example_grid.grid)
+    else:
+        print("Target Reached")
+        print_path(example_grid.grid)
 
 if __name__ == "__main__":
     test_backward_astar()
-"""
