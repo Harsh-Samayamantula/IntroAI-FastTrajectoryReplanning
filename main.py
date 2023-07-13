@@ -31,6 +31,9 @@ def main():
     
 
     gridworld = retrieved_gridworlds_arr[40]
-    #print(gridworld.print_grid())
-
     
+    print(gridworld.print_grid())
+
+
+if __name__ == "__main__":
+    main()
