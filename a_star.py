@@ -5,7 +5,7 @@
 # |(100-x)|+|(100-y)| = h value
 
 #Start w g value = infinity
-#Increment g value as you keep moving through the world (+1 every time you move up/left/right/down)
+#Incent g value as you keep moving through the world (+1 every time you move up/left/right/down)
 
 #f-value function = infinity
 #h-val + g-val
@@ -61,6 +61,7 @@ import numpy as np
 import heapq
 import random
 from GridWorld import GridWorld
+from prettytable import PrettyTable
 
 class State:
     def __init__(self, x, y, g=np.inf, h=0):
@@ -74,15 +75,55 @@ class State:
     def __lt__(self, other):
         return self.f < other.f
 
-def get_neighbors(state):
+def get_neighbors(state, agent_grid):
     row, col = state.x, state.y
     directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-    neighbors = [(row + dr, col + dc) for dr, dc in directions if is_valid((row + dr, col + dc))]
-    return [State(r, c, g=np.inf, h=np.inf) for r, c in neighbors]
+    neighbors = [(row + dr, col + dc) for dr, dc in directions if is_valid((row + dr, col + dc), agent_grid)]
+    # return [State(r, c, g=np.inf, h=np.inf) for r, c in neighbors]
+    arr = [State(r, c, g=np.inf, h=np.inf) for r, c in neighbors]
+    # for st in arr:
+    #     print(st.x, st.y)
+    return arr
 
-def is_valid(cell):
+# Flag
+def is_valid(cell, agent_grid):
     row, col = cell
-    return 0 <= row < len(grid) and 0 <= col < len(grid[0]) and grid[row][col] != 'X'
+    return 0 <= row < len(agent_grid) and 0 <= col < len(agent_grid[0]) and agent_grid[row][col] != 'X'
+
+
+def in_bounds(x, y, grid):
+    if 0 <= x < len(grid) and 0 <= y < len(grid[0]):
+        return True
+    return False
+
+def move_agent(current_state, path, grid, agent_grid):
+    for move in path:
+        update_visbility(current_state, grid, agent_grid)            
+        if grid[move.x][move.y] == "X":
+            #Print grid
+            return current_state
+        else:
+            grid[current_state.x][current_state.y] = ' '
+            grid[move.x][move.y] = 'A'
+            current_state = move
+    #Print Grid
+    return current_state
+
+def update_visbility(current_state, grid, agent_grid):
+    x = current_state.x
+    y = current_state.y
+    if in_bounds(x, y+1,grid):
+        if grid[x][y+1] == 'X' and agent_grid[x][y+1] == ' ':
+            agent_grid[x][y+1] = 'X'
+    if in_bounds(x, y-1,grid):
+        if grid[x][y-1] == 'X' and agent_grid[x][y-1] == ' ':
+            agent_grid[x][y-1] = 'X'
+    if in_bounds(x+1, y,grid):
+        if grid[x+1][y] == 'X' and agent_grid[x+1][y] == ' ':
+            agent_grid[x+1][y] = 'X'
+    if in_bounds(x-1, y,grid):
+        if grid[x-1][y] == 'X' and agent_grid[x-1][y] == ' ':
+            agent_grid[x-1][y] = 'X' 
 
 def heuristic(state, end_state):
     # Use Manhattan distance for heuristic
@@ -93,6 +134,12 @@ def print_grid(grid):
         for cell in row:
             print(cell, end=" ")
         print()
+
+def print_grid2(grid):
+    x = PrettyTable()
+    x.field_names = [f'{i}' for i in range(0, len(grid[0]))]
+    x.add_rows(grid)
+    print(x)
 
 def print_path(grid, path):
     path_cells = {(state.x, state.y) for state in path}
@@ -113,46 +160,57 @@ def reconstruct_path(state):
         state = state.parent
     return path[::-1]
 
-def backward_astar(grid, start_cell, end_cell, max_iterations=10000):
-    # Initialize start and end States
-    start_state = State(start_cell[0], start_cell[1], g=0)
-    end_state = State(end_cell[0], end_cell[1], g=np.inf, h=0)  # h is 0 for the goal state
-
-    start_state.h = heuristic(start_state, end_state)
-
-    # Open and closed lists, stored as sets for efficient search
-    open_list = {start_state}
-    closed_list = set()
-
+def compute_path(agent_grid, c_state, end_state, open_list, closed_list, max_iterations):
     iterations = 0
-
     while open_list and iterations < max_iterations:
         # Pop a state with the smallest f-value
-        current_state = min(open_list, key=lambda state: state.f)
-        open_list.remove(current_state)
+        c_state = min(open_list, key=lambda state: state.f)
+        open_list.remove(c_state)
 
-        if current_state.x == end_state.x and current_state.y == end_state.y:
-            print("Target Reached")
-            return reconstruct_path(current_state)
+        if c_state.x == end_state.x and c_state.y == end_state.y:
+            print('Path to target computed')
+            return reconstruct_path(c_state)
 
-        closed_list.add(current_state)
+        closed_list.add(c_state)
+        in_closed_flag=False
+        in_open_flag = False
 
-        for neighbor in get_neighbors(current_state):
+        for neighbor in get_neighbors(c_state, agent_grid):
+            # for cl in closed_list:
+            #     if cl.x == neighbor.x and cl.y == neighbor.y:
+            #         in_closed_flag = True
+            #         break
+            # if in_closed_flag == True:
+            #     in_closed_flag = False
+            #     continue
             if neighbor in closed_list:
                 continue
-            tentative_g = current_state.g + 1  # assuming cost=1 for each step
+            tentative_g = c_state.g + 1  # assuming cost = 1 for each step
 
+            # for ol in open_list:
+            #     if neighbor.x == ol.x and neighbor.y == ol.y:
+            #         in_open_flag = True
+            #         break
+            # if in_open_flag is False:
             if neighbor not in open_list:
                 open_list.add(neighbor)
             elif tentative_g >= neighbor.g:
-                continue  # this is not a better path
+                # in_open_flag = False
+                continue
+            # else:
+            #     in_open_flag = False  # this is not a better path
 
             # This is the best path until now. Record it
-            neighbor.parent = current_state
+            neighbor.parent = c_state
             neighbor.g = tentative_g
             neighbor.h = heuristic(neighbor, end_state)
             neighbor.f = neighbor.g + neighbor.h
 
+        # print('NEIGHBORS VISITED... NEXT ITERATION')
+        # for s in open_list:
+        #     print('OPEN: ', s.x, s.y)
+        # for s in closed_list:
+        #     print('CLOSED: ',s.x, s.y)
         iterations += 1
 
     # No path found
@@ -161,6 +219,131 @@ def backward_astar(grid, start_cell, end_cell, max_iterations=10000):
     else:
         print("No Path Found")
     return None
+
+def forward_astar(grid, agent_grid, start_cell, end_cell, max_iterations=10000):
+    start_state = State(start_cell[0], start_cell[1], g=np.inf, h=0)
+    end_state = State(end_cell[0], end_cell[1], g=0)
+
+    start_state.h=heuristic(start_state, end_state)
+
+    agent_state = start_state
+
+    # open_list = {start_state}
+    # closed_list = set()
+    update_visbility(agent_state, grid, agent_grid)
+    while agent_state.x != end_state.x and agent_state.y != end_state.y:
+        open_list={agent_state}
+        closed_list=set()
+        path = compute_path(agent_grid, agent_state, end_state, open_list, closed_list, max_iterations)
+        if not path:
+            print("You've made a grave error. Max iterations reached")
+            return False
+        
+        #initially current_state will be 0,0 as that's the agent's start position
+        agent_state = move_agent(agent_state, path, grid, agent_grid)
+        # print_grid(grid)
+        print_grid2(grid)
+    print("Destination reached")
+    return True
+
+def backward_astar(grid, agent_grid, start_cell, end_cell, max_iterations=10000):
+    start_state = State(start_cell[0], start_cell[1], g=0)
+    end_state = State(end_cell[0], end_cell[1], g=np.inf, h=0)
+
+    start_state.h=heuristic(start_state, end_state)
+
+    agent_state = start_state
+
+    # open_list = {start_state}
+    # closed_list = set()
+    update_visbility(agent_state, grid, agent_grid)
+    while agent_state.x != end_state.x and agent_state.y != end_state.y:
+        open_list={agent_state}
+        closed_list=set()
+        path = compute_path(agent_grid, agent_state, end_state, open_list, closed_list, max_iterations)
+        if not path:
+            print("You've made a grave error. Max iterations reached")
+            return False
+        
+        #initially current_state will be 0,0 as that's the agent's start position
+        agent_state = move_agent(agent_state, path, grid, agent_grid)
+        # print_grid(grid)
+        print_grid2(grid)
+    print("Destination reached")
+    return True
+
+# def backward_astar(grid, start_cell, end_cell, max_iterations=10000):
+#     # Initialize start and end States
+#     start_state = State(start_cell[0], start_cell[1], g=0)
+#     end_state = State(end_cell[0], end_cell[1], g=np.inf, h=0)  # h is 0 for the goal state
+
+#     start_state.h = heuristic(start_state, end_state)
+
+#     # Open and closed lists, stored as sets for efficient search
+#     open_list = {start_state}
+#     closed_list = set()
+
+#     iterations = 0
+
+#     while open_list and iterations < max_iterations:
+#         # Pop a state with the smallest f-value
+#         current_state = min(open_list, key=lambda state: state.f)
+#         open_list.remove(current_state)
+
+#         if current_state.x == end_state.x and current_state.y == end_state.y:
+#             print("Target Reached")
+#             return reconstruct_path(current_state)
+
+#         closed_list.add(current_state)
+
+#         for neighbor in get_neighbors(current_state):
+#             if neighbor in closed_list:
+#                 continue
+#             tentative_g = current_state.g + 1  # assuming cost=1 for each step
+
+#             if neighbor not in open_list:
+#                 open_list.add(neighbor)
+#             elif tentative_g >= neighbor.g:
+#                 continue  # this is not a better path
+
+#             # This is the best path until now. Record it
+#             neighbor.parent = current_state
+#             neighbor.g = tentative_g
+#             neighbor.h = heuristic(neighbor, end_state)
+#             neighbor.f = neighbor.g + neighbor.h
+
+#         iterations += 1
+
+#     # No path found
+#     if iterations == max_iterations:
+#         print("Max Iterations Reached")
+#     else:
+#         print("No Path Found")
+#     return None
+
+def test_forward_astar():
+    valid_gridworlds_arr = []
+    while len(valid_gridworlds_arr) < 1:
+        x = GridWorld(11, 11)
+        x.make_grid()
+        x.is_valid_grid_world()
+        if(x.valid_grid_world):
+            valid_gridworlds_arr.append(x)
+
+    example_grid = valid_gridworlds_arr[0]
+    start_cell = (0, 0)
+    end_cell = (10, 10)
+    example_grid.print_grid()
+
+    
+    forward_astar(example_grid.grid, example_grid.agent_grid, start_cell, end_cell)
+
+    # if path is None:
+    #     print("No Path Found")
+    #     print_grid(grid)
+    # else:
+    #     print("Target Reached")
+    #     print_path(grid, path)
 
 def test_backward_astar():
     global grid
@@ -178,17 +361,20 @@ def test_backward_astar():
     end_cell = (0, 0)
     example_grid.print_grid()
 
-    grid = example_grid.grid
+    # grid = example_grid.grid
 
-    path = backward_astar(grid, start_cell, end_cell)
+    # path = backward_astar(grid, start_cell, end_cell)
 
-    if path is None:
-        print("No Path Found")
-        print_grid(grid)
-    else:
-        print("Target Reached")
-        print_path(grid, path)
+    # if path is None:
+    #     print("No Path Found")
+    #     print_grid(grid)
+    # else:
+    #     print("Target Reached")
+    #     print_path(grid, path)
+    backward_astar(example_grid.grid, example_grid.agent_grid, start_cell, end_cell)
+
 
 if __name__ == "__main__":
+    # test_backward_astar()
     test_backward_astar()
 

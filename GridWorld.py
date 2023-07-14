@@ -6,14 +6,19 @@ class GridWorld:
         self.rows = rows
         self.valid_grid_world = False
 
+
     def make_grid(self):
         self.grid = []
+        self.agent_grid = []
         for row in range (0, self.rows):
             row_arr = []
+            row_arr_agent = []
             for col in range (0, self.cols):
                 # row_arr.append('⬜' if random.random() < 0.7 else '⬛')
                 row_arr.append(' ' if random.random() < 0.7 else 'X')
+                row_arr_agent.append(' ')
             self.grid.append(row_arr)
+            self.agent_grid.append(row_arr_agent)
 
     def is_valid_grid_world(self):
         visited_arr = [[False for col in range(self.cols)] for row in range(self.rows)] 
