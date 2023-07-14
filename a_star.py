@@ -1,3 +1,4 @@
+
 #Hueristic Function
 #h-val = undefined
 #--> manhattan distance from current coordinate to goal (bottom-right corner)
@@ -61,16 +62,10 @@ import heapq
 import random
 from GridWorld import GridWorld
 
-
-class Cell:
-    def __init__(self, x, y, type):
+class State:
+    def __init__(self, x, y, g=np.inf, h=0):
         self.x = x
         self.y = y
-        self.type = type
-
-class State:
-    def __init__(self, cell, g=np.inf, h=0):
-        self.cell = cell
         self.g = g
         self.h = h
         self.f = self.g + self.h
@@ -80,46 +75,32 @@ class State:
         return self.f < other.f
 
 def get_neighbors(state):
-    row, col = state.cell.x, state.cell.y
+    row, col = state.x, state.y
     directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-    neighbors = [(row + dr, col + dc) for dr, dc in directions]
-    return [State(grid[r][c], g=np.inf, h=np.inf) for r, c in neighbors if is_valid((r, c))]
+    neighbors = [(row + dr, col + dc) for dr, dc in directions if is_valid((row + dr, col + dc))]
+    return [State(r, c, g=np.inf, h=np.inf) for r, c in neighbors]
 
 def is_valid(cell):
     row, col = cell
-    return 0 <= row < 11 and 0 <= col < 11 and grid[row][col].type != 'X'
+    return 0 <= row < len(grid) and 0 <= col < len(grid[0]) and grid[row][col] != 'X'
 
 def heuristic(state, end_state):
     # Use Manhattan distance for heuristic
-    return abs(state.cell.x - end_state.cell.x) + abs(state.cell.y - end_state.cell.y)
-
-# def create_grid(rows, cols, obstacle_probability):
-#     grid = []
-#     for i in range(rows):
-#         grid_row = []
-#         for j in range(cols):
-#             if np.random.random() < obstacle_probability:
-#                 cell_type = 'X'
-#             else:
-#                 cell_type = '0'
-#             grid_row.append(Cell(i, j, cell_type))
-#         grid.append(grid_row)
-#     return grid
+    return abs(state.x - end_state.x) + abs(state.y - end_state.y)
 
 def print_grid(grid):
     for row in grid:
         for cell in row:
-            print(cell.type, end=" ")
+            print(cell, end=" ")
         print()
 
 def print_path(grid, path):
-    path_cells = {cell for cell in path}
+    path_cells = {(state.x, state.y) for state in path}
     for row in range(len(grid)):
         for col in range(len(grid[0])):
-            cell = grid[row][col]
-            if cell in path_cells:
+            if (row, col) in path_cells:
                 print('P', end=' ')
-            elif cell.type == 'X':
+            elif grid[row][col] == 'X':
                 print('X', end=' ')
             else:
                 print(' ', end=' ')
@@ -128,14 +109,14 @@ def print_path(grid, path):
 def reconstruct_path(state):
     path = []
     while state is not None:
-        path.append(state.cell)
+        path.append(state)
         state = state.parent
     return path[::-1]
 
 def backward_astar(grid, start_cell, end_cell, max_iterations=10000):
     # Initialize start and end States
-    start_state = State(start_cell, g=0)
-    end_state = State(end_cell, g=np.inf, h=0)  # h is 0 for the goal state
+    start_state = State(start_cell[0], start_cell[1], g=0)
+    end_state = State(end_cell[0], end_cell[1], g=np.inf, h=0)  # h is 0 for the goal state
 
     start_state.h = heuristic(start_state, end_state)
 
@@ -150,7 +131,7 @@ def backward_astar(grid, start_cell, end_cell, max_iterations=10000):
         current_state = min(open_list, key=lambda state: state.f)
         open_list.remove(current_state)
 
-        if current_state.cell == end_state.cell:
+        if current_state.x == end_state.x and current_state.y == end_state.y:
             print("Target Reached")
             return reconstruct_path(current_state)
 
@@ -191,22 +172,23 @@ def test_backward_astar():
         x.is_valid_grid_world()
         if(x.valid_grid_world):
             valid_gridworlds_arr.append(x)
-    # for i in range(1):
+
     example_grid = valid_gridworlds_arr[0]
-    start_cell = Cell(20, 20, " ")
-    end_cell = Cell(20, 20, " ")
+    start_cell = (20, 20)
+    end_cell = (0, 0)
     example_grid.print_grid()
 
     grid = example_grid.grid
 
-    path = backward_astar(example_grid.grid, start_cell, end_cell)
+    path = backward_astar(grid, start_cell, end_cell)
 
     if path is None:
         print("No Path Found")
-        print_grid(example_grid.grid)
+        print_grid(grid)
     else:
         print("Target Reached")
-        print_path(example_grid.grid)
+        print_path(grid, path)
 
 if __name__ == "__main__":
     test_backward_astar()
+
