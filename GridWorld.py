@@ -69,7 +69,7 @@ class GridWorld:
     
         # Mark current cell as visited
         visited[row][col] = True
-        print(f"Visiting cell: ({row}, {col})")
+        # print(f"Visiting cell: ({row}, {col})")
     
         # Explore neighbors in a specific order: up, right, down, left
         
@@ -94,7 +94,7 @@ class GridWorld:
                 return
             # Marking Visited
             visited[row][col] = True
-            print(f"Visiting cell: ({row}, {col})")
+            # print(f"Visiting cell: ({row}, {col})")
             # Push unvisited neighbors onto the stack: up, right, down, left
             stack.append((row - 1, col))  # Up
             stack.append((row, col + 1))  # Right

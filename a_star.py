@@ -62,6 +62,9 @@ import heapq
 import random
 from GridWorld import GridWorld
 from prettytable import PrettyTable
+import pickle
+
+TIEBREAK_LARGER = True
 class State:
     def __init__(self, x, y, g=np.inf, h=0):
         self.x = x
@@ -80,6 +83,11 @@ class State:
         return hash((self.x, self.y))
 
     def __lt__(self, other):
+        if self.f == other.f:
+            if TIEBREAK_LARGER:
+                return self.g > other.g #Tiebreak Favoring larger g
+            else:
+                return self.g < other.g
         return self.f < other.f
 
 def get_neighbors(state, agent_grid):
@@ -92,7 +100,6 @@ def get_neighbors(state, agent_grid):
     #     print(st.x, st.y)
     return arr
 
-# Flag
 def is_valid(cell, agent_grid):
     row, col = cell
     return 0 <= row < len(agent_grid) and 0 <= col < len(agent_grid[0]) and agent_grid[row][col] != 'X'
@@ -226,21 +233,30 @@ def forward_astar(grid, agent_grid, start_cell, end_cell, max_iterations=10000):
             return False
         
         agent_state = move_agent(agent_state, path, grid, agent_grid)
-        print_grid2(grid)
+    print_grid2(grid)
     print("Destination reached")
     return True
 def backward_astar(grid, agent_grid, start_cell, end_cell, max_iterations=10000):
     start_state = State(start_cell[0], start_cell[1], g=0)
     end_state = State(end_cell[0], end_cell[1], g=np.inf)
 
-    agent_state = start_state
+    # agent_state = start_state
+    agent_state = end_state
     end_state.h = heuristic(start_state, end_state) # Compute heuristic after end_state is assigned.
 
     update_visbility(agent_state, grid, agent_grid)
     while agent_state.x != end_state.x or agent_state.y != end_state.y:
         open_list={agent_state}
+        # open_list = {end_state}
         closed_list=set()
+        # path = compute_path(agent_grid, end_state, agent_state, open_list, closed_list, max_iterations)
         path = compute_path(agent_grid, agent_state, end_state, open_list, closed_list, max_iterations)
+        print("OPEN")
+        for s in open_list:
+            print(s.x, s.y)
+        print("CLOSED")
+        for s in closed_list:
+            print(s.x, s.y)  
         if not path:
             print("You've made a grave error. Max iterations reached")
             return False
@@ -311,46 +327,43 @@ def test_forward_astar():
     example_grid = valid_gridworlds_arr[0]
     start_cell = (0, 0)
     end_cell = (100, 100)
-    example_grid.print_grid()
+    # example_grid.print_grid()
 
+    # with open('gridworlds.pkl', 'rb') as f:
+    #     retrieved_gridworlds_arr = pickle.load(f)
+    
+    # count = 0
+    # for grid in retrieved_gridworlds_arr:
+    #     forward_astar(grid.grid, grid.agent_grid, start_cell, end_cell)
+    #     print(f"Calculation to GRID #{count} is complete!")
+    #     count+=1
+    # gridworld = retrieved_gridworlds_arr[40]
     
     forward_astar(example_grid.grid, example_grid.agent_grid, start_cell, end_cell)
-
-    # if path is None:
-    #     print("No Path Found")
-    #     print_grid(grid)
-    # else:
-    #     print("Target Reached")
-    #     print_path(grid, path)
+    print_grid2(example_grid.grid)
+    print('TEST COMPLETE')
 
 def test_backward_astar():
-    global grid
-
     valid_gridworlds_arr = []
     while len(valid_gridworlds_arr) < 1:
-        x = GridWorld(101, 101)
+        x = GridWorld(10, 10)
         x.make_grid()
         x.is_valid_grid_world()
         if(x.valid_grid_world):
             valid_gridworlds_arr.append(x)
 
     example_grid = valid_gridworlds_arr[0]
-    start_cell = (100, 100)
+    start_cell = (9, 9)
     end_cell = (0, 0)
-    example_grid.print_grid()
-
-    # grid = example_grid.grid
-
-    # path = backward_astar(grid, start_cell, end_cell)
-
-    # if path is None:
-    #     print("No Path Found")
-    #     print_grid(grid)
-    # else:
-    #     print("Target Reached")
-    #     print_path(grid, path)
     backward_astar(example_grid.grid, example_grid.agent_grid, start_cell, end_cell)
+    print_grid2(example_grid.grid)
+    print('TEST COMPLETE')
 
+
+
+def set_tiebreak(larger_g):
+    global TIEBREAK_LARGER 
+    TIEBREAK_LARGER = larger_g
 
 if __name__ == "__main__":
     # test_backward_astar()
