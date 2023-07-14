@@ -5,6 +5,32 @@ class GridWorld:
         self.cols = columns
         self.rows = rows
         self.valid_grid_world = False
+        self.agent_grid = [[' ' for _ in range(columns)] for _ in range(rows)]  # add this line
+
+    def update_agent_grid(self, position, visibility):
+        # Update the agent_grid based on the agent's position and visibility
+        # Here we assume that `visibility` is a 2D list that represents what the agent can see.
+        for dx in range(-visibility, visibility + 1):
+            for dy in range(-visibility, visibility + 1):
+                x, y = position[0] + dx, position[1] + dy
+                if 0 <= x < self.rows and 0 <= y < self.cols:
+                    self.agent_grid[x][y] = self.grid[x][y]
+
+
+    def mark_path_on_grid(self, path):
+        for cell in path:
+            self.grid[cell[0]][cell[1]] = 'O'
+        start_cell = path[0]
+        end_cell = path[-1]
+        self.grid[start_cell[0]][start_cell[1]] = 'A'
+        self.grid[end_cell[0]][end_cell[1]] = 'Z'
+
+    def print_grid(self):
+        x = PrettyTable()
+        x.field_names = [f'{i}' for i in range(0, self.cols)]
+        x.add_rows(self.grid)
+        print(x)
+        
 
     def make_grid(self):
         self.grid = []
