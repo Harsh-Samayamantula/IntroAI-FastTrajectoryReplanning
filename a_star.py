@@ -5,7 +5,7 @@
 # |(100-x)|+|(100-y)| = h value
 
 #Start w g value = infinity
-#Incent g value as you keep moving through the world (+1 every time you move up/left/right/down)
+#Increment g value as you keep moving through the world (+1 every time you move up/left/right/down)
 
 #f-value function = infinity
 #h-val + g-val
@@ -166,6 +166,7 @@ def reconstruct_path(state):
         path.append(state)
         state = state.parent
     return path[::-1]
+
 def compute_path(agent_grid, c_state, end_state, open_list, closed_list, max_iterations):
     iterations = 0
     while open_list and iterations < max_iterations:
@@ -228,7 +229,6 @@ def forward_astar(grid, agent_grid, start_cell, end_cell, max_iterations=10000):
         print_grid2(grid)
     print("Destination reached")
     return True
-
 def backward_astar(grid, agent_grid, start_cell, end_cell, max_iterations=10000):
     start_state = State(start_cell[0], start_cell[1], g=0)
     end_state = State(end_cell[0], end_cell[1], g=np.inf)
@@ -354,4 +354,4 @@ def test_backward_astar():
 
 if __name__ == "__main__":
     # test_backward_astar()
-     test_forward_astar()
+    test_forward_astar()
