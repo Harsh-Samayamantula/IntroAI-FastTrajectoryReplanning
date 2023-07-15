@@ -110,6 +110,27 @@ def main():
     # with open('adaptive_a.pkl', 'wb') as f:
     #     pickle.dump(adaptive_astar_speed, f)
 
+    """ Repeated Backward A* being tested on the 50 pickled gridworlds"""
+    # start_cell = (0, 0)
+    # end_cell = (100, 100)
+    # set_tiebreak(False)
+    # """ Starting with untraversed versions of gridworlds"""
+    # count = 1
+    # backward_astar_smallg_speed = []
+    # with open('gridworlds.pkl', 'rb') as f:
+    #     retrieved_gridworlds_arr = pickle.load(f)
+    # for grid in retrieved_gridworlds_arr:
+    #     start_time = datetime.datetime.now()
+    #     backward_astar(grid.grid, grid.agent_grid, start_cell, end_cell)
+    #     end_time = datetime.datetime.now()
+    #     delta = (end_time - start_time).total_seconds()
+    #     backward_astar_smallg_speed.append(delta)
+    #     print(f"SCENARIO 5: Calculation to GRID #{count} is complete!")
+    #     count+=1
+
+    # with open('backward_a_small.pkl', 'wb') as f:
+    #     pickle.dump(backward_astar_smallg_speed, f)
+
     with open('backward_a.pkl', 'rb') as f:
         backward_astar_speed = pickle.load(f)
     with open('forward_a.pkl', 'rb') as f:
@@ -118,18 +139,8 @@ def main():
         forward_astar_smallg_speed = pickle.load(f)
     with open('adaptive_a.pkl', 'rb') as f:
         adaptive_astar_speed = pickle.load(f)
-    print(f'SUMMARY OF RESULTS \nForward A* (larger g tiebreak): {mean(forward_astar_speed)} \nForward A* (smaller g tiebreak): {mean(forward_astar_smallg_speed)} \nBackward A*: {mean(backward_astar_speed)} \nAdaptive A*: {mean(adaptive_astar_speed)}')
+    print(f'SUMMARY OF RESULTS \nForward A* (larger g tiebreak): {mean(forward_astar_speed)} \nForward A* (smaller g tiebreak): {mean(forward_astar_smallg_speed)} \nBackward A* (larger g tiebreak): {mean(backward_astar_speed)} \nAdaptive A*: {mean(adaptive_astar_speed)}')
 
-
-    # set_tiebreak(True)
-    # test_forward_astar()
-    # set_tiebreak(False)
-    # test_forward_astar()
-    # set_tiebreak(True)
-    # test_backward_astar()
-    # set_tiebreak(False)
-    # test_backward_astar()
-    
 
 
 
