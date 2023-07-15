@@ -1,7 +1,8 @@
 from GridWorld import GridWorld
 import pickle
-from a_star import forward_astar, backward_astar, test_backward_astar, test_forward_astar, set_tiebreak
-
+from a_star import forward_astar, backward_astar, test_backward_astar, test_forward_astar, set_tiebreak, adaptive_astar,test_adaptive_astar
+import datetime
+from statistics import mean
 
 """ Used to generate 50 valid gridworlds --> stored in gridworlds.pkl """
 def generate():
@@ -35,35 +36,89 @@ def main():
     
 
 
-    # """ Repeated Forward A* being tested on the 50 pickled gridworlds"""
-    # start_cell = (0, 0)
-    # end_cell = (100, 100)
-    # count = 1
-    # for grid in retrieved_gridworlds_arr:
-    #     forward_astar(grid.grid, grid.agent_grid, start_cell, end_cell)
-    #     print(f"Calculation to GRID #{count} is complete!")
-    #     count+=1
+    """ Repeated Forward A* being tested on the 50 pickled gridworlds """
+    start_cell = (0, 0)
+    end_cell = (100, 100)
+    count = 1
+    forward_astar_speed = []
+    for grid in retrieved_gridworlds_arr:
+        start_time = datetime.datetime.now()
+        forward_astar(grid.grid, grid.agent_grid, start_cell, end_cell)
+        end_time = datetime.datetime.now()
+        delta = (end_time - start_time).total_seconds()
+        forward_astar_speed.append(delta)
+        print(f"SCENARIO 1: Calculation to GRID #{count} is complete!")
+        count+=1
 
-    # """ Repeated Backward A* being tested on the 50 pickled gridworlds"""
-    # start_cell = (100, 100)
-    # end_cell = (0, 0)
-    # """ Starting with untraversed versions of gridworlds"""
-    # count = 1
-    # with open('gridworlds.pkl', 'rb') as f:
-    #     retrieved_gridworlds_arr = pickle.load(f)
-    # for grid in retrieved_gridworlds_arr:
-    #     backward_astar(grid.grid, grid.agent_grid, start_cell, end_cell)
-    #     print(f"Calculation to GRID #{count} is complete!")
-    #     count+=1
+    with open('forward_a.pkl', 'wb') as f:
+        pickle.dump(forward_astar_speed, f)
+
+    """ Repeated Forward A* being tested with a favor smaller g heuristic on the 50 pickled gridworlds """
+    with open('gridworlds.pkl', 'rb') as f:
+        retrieved_gridworlds_arr = pickle.load(f)
+    count = 1
+    forward_astar_smallg_speed = []
+    set_tiebreak(False)
+    for grid in retrieved_gridworlds_arr:
+        start_time = datetime.datetime.now()
+        forward_astar(grid.grid, grid.agent_grid, start_cell, end_cell)
+        end_time = datetime.datetime.now()
+        delta = (end_time - start_time).total_seconds()
+        forward_astar_smallg_speed.append(delta)
+        print(f"SCENARIO 2: Calculation to GRID #{count} is complete!")
+        count+=1
+
+    with open('forward_a_small.pkl', 'wb') as f:
+        pickle.dump(forward_astar_smallg_speed, f)
+
+    """ Repeated Backward A* being tested on the 50 pickled gridworlds"""
+    start_cell = (0, 0)
+    end_cell = (100, 100)
+    set_tiebreak(True)
+    """ Starting with untraversed versions of gridworlds"""
+    count = 1
+    backward_astar_speed = []
+    with open('gridworlds.pkl', 'rb') as f:
+        retrieved_gridworlds_arr = pickle.load(f)
+    for grid in retrieved_gridworlds_arr:
+        start_time = datetime.datetime.now()
+        backward_astar(grid.grid, grid.agent_grid, start_cell, end_cell)
+        delta = (end_time - start_time).total_seconds()
+        end_time = datetime.datetime.now()
+        backward_astar_speed.append(delta)
+        print(f"SCENARIO 3: Calculation to GRID #{count} is complete!")
+        count+=1
+
+    with open('backward_a.pkl', 'wb') as f:
+        pickle.dump(backward_astar_speed, f)
+
+    """ Adaptive A* being tested on the 50 pickled gridworlds"""
+    count = 1
+    adaptive_astar_speed = []
+    with open('gridworlds.pkl', 'rb') as f:
+        retrieved_gridworlds_arr = pickle.load(f)
+    for grid in retrieved_gridworlds_arr:
+        start_time = datetime.datetime.now()
+        adaptive_astar(grid.grid, grid.agent_grid, start_cell, end_cell)
+        delta = (end_time - start_time).total_seconds()
+        end_time = datetime.datetime.now()
+        adaptive_astar_speed.append(delta)
+        print(f"SCENARIO 4: Calculation to GRID #{count} is complete!")
+        count+=1
+    
+    with open('adaptive_a.pkl', 'wb') as f:
+        pickle.dump(adaptive_astar_speed, f)
+
+    print(f'SUMMARY OF RESULTS \nForward A* (larger g tiebreak): {mean(forward_astar_speed)} \nForward A* (smaller g tiebreak): {mean(forward_astar_smallg_speed)} \nBackward A*: {mean(backward_astar_speed)} \nAdaptive A*: {mean(adaptive_astar_speed)}')
 
     # set_tiebreak(True)
     # test_forward_astar()
     # set_tiebreak(False)
     # test_forward_astar()
-    set_tiebreak(True)
-    test_backward_astar()
-    set_tiebreak(False)
-    test_backward_astar()
+    # set_tiebreak(True)
+    # test_backward_astar()
+    # set_tiebreak(False)
+    # test_backward_astar()
     
 
 

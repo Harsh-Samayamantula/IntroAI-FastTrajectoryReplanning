@@ -63,6 +63,7 @@ import random
 from GridWorld import GridWorld
 from prettytable import PrettyTable
 import pickle
+import copy
 
 TIEBREAK_LARGER = True
 class State:
@@ -182,7 +183,7 @@ def compute_path(agent_grid, c_state, end_state, open_list, closed_list, max_ite
         open_list.remove(c_state)
 
         if c_state.x == end_state.x and c_state.y == end_state.y:
-            print('Path to target computed')
+            # print('Path to target computed')
             return reconstruct_path(c_state)
 
         closed_list.add(c_state)
@@ -233,16 +234,19 @@ def forward_astar(grid, agent_grid, start_cell, end_cell, max_iterations=10000):
             return False
         
         agent_state = move_agent(agent_state, path, grid, agent_grid)
-    print_grid2(grid)
+        # if agent_state.x == end_state.x or agent_state.y == end_state.y:
+        #     print(f'OPEN LIST: {len(open_list)}\nCLOSED LIST: {len(closed_list)}')
+    # print_grid2(grid)
     print("Destination reached")
     return True
 def backward_astar(grid, agent_grid, start_cell, end_cell, max_iterations=10000):
-    start_state = State(start_cell[0], start_cell[1], g=0)
-    end_state = State(end_cell[0], end_cell[1], g=np.inf)
+    start_state = State(start_cell[0], start_cell[1])
+    end_state = State(end_cell[0], end_cell[1], g=0)
 
-    # agent_state = start_state
-    agent_state = end_state
+    agent_state = start_state
+    # agent_state = end_state
     end_state.h = heuristic(start_state, end_state) # Compute heuristic after end_state is assigned.
+    # start_state.h = heuristic(start_state, end_state)
 
     update_visbility(agent_state, grid, agent_grid)
     while agent_state.x != end_state.x or agent_state.y != end_state.y:
@@ -251,18 +255,21 @@ def backward_astar(grid, agent_grid, start_cell, end_cell, max_iterations=10000)
         closed_list=set()
         # path = compute_path(agent_grid, end_state, agent_state, open_list, closed_list, max_iterations)
         path = compute_path(agent_grid, agent_state, end_state, open_list, closed_list, max_iterations)
-        print("OPEN")
-        for s in open_list:
-            print(s.x, s.y)
-        print("CLOSED")
-        for s in closed_list:
-            print(s.x, s.y)  
+        # print("OPEN")
+        # for s in open_list:
+        #     print(s.x, s.y)
+        # print("CLOSED")
+        # for s in closed_list:
+        #     print(s.x, s.y)  
+        # print_path(agent_grid, path)
         if not path:
             print("You've made a grave error. Max iterations reached")
             return False
         
         agent_state = move_agent(agent_state, path, grid, agent_grid)
-        print_grid2(grid)
+        # if agent_state.x == end_state.x or agent_state.y == end_state.y:
+        #     print(f'OPEN LIST: {len(open_list)}\nCLOSED LIST: {len(closed_list)}')
+    # print_grid2(grid)
     print("Destination reached")
     return True
 
@@ -318,7 +325,7 @@ def backward_astar(grid, agent_grid, start_cell, end_cell, max_iterations=10000)
 def test_forward_astar():
     valid_gridworlds_arr = []
     while len(valid_gridworlds_arr) < 1:
-        x = GridWorld(101, 101)
+        x = GridWorld(10, 10)
         x.make_grid()
         x.is_valid_grid_world()
         if(x.valid_grid_world):
@@ -326,7 +333,9 @@ def test_forward_astar():
 
     example_grid = valid_gridworlds_arr[0]
     start_cell = (0, 0)
-    end_cell = (100, 100)
+    end_cell = (9, 9)
+
+    # example_grid_deep = copy.deepcopy(example_grid)
     # example_grid.print_grid()
 
     # with open('gridworlds.pkl', 'rb') as f:
@@ -340,23 +349,27 @@ def test_forward_astar():
     # gridworld = retrieved_gridworlds_arr[40]
     
     forward_astar(example_grid.grid, example_grid.agent_grid, start_cell, end_cell)
-    print_grid2(example_grid.grid)
+    # print_grid2(example_grid.grid)
     print('TEST COMPLETE')
+    # backward_astar(example_grid.grid, example_grid.agent_grid, start_cell, end_cell)
+    # print('TEST COMPLETE')
+
+
 
 def test_backward_astar():
     valid_gridworlds_arr = []
     while len(valid_gridworlds_arr) < 1:
-        x = GridWorld(10, 10)
+        x = GridWorld(100, 100)
         x.make_grid()
         x.is_valid_grid_world()
         if(x.valid_grid_world):
             valid_gridworlds_arr.append(x)
 
     example_grid = valid_gridworlds_arr[0]
-    start_cell = (9, 9)
-    end_cell = (0, 0)
+    start_cell = (0,0)
+    end_cell = (99,99)
     backward_astar(example_grid.grid, example_grid.agent_grid, start_cell, end_cell)
-    print_grid2(example_grid.grid)
+    # print_grid2(example_grid.grid)
     print('TEST COMPLETE')
 
 
@@ -385,7 +398,7 @@ def adaptive_astar(grid, agent_grid, start_cell, end_cell, max_iterations=10000)
             return False
         
         agent_state = move_agent(agent_state, path, grid, agent_grid)
-        print_grid2(grid)
+    # print_grid2(grid)
     print("Destination reached")
     return True
 
@@ -397,7 +410,7 @@ def adaptive_heuristic(state, end_state):
 def test_adaptive_astar():
     valid_gridworlds_arr = []
     while len(valid_gridworlds_arr) < 1:
-        x = GridWorld(101, 101)
+        x = GridWorld(10, 10)
         x.make_grid()
         x.is_valid_grid_world()
         if(x.valid_grid_world):
@@ -405,11 +418,11 @@ def test_adaptive_astar():
 
     example_grid = valid_gridworlds_arr[0]
     start_cell = (0, 0)
-    end_cell = (100, 100)
-    example_grid.print_grid()
+    end_cell = (9, 9)
+    # example_grid.print_grid()
     adaptive_astar(example_grid.grid, example_grid.agent_grid, start_cell, end_cell)
     
 if __name__ == "__main__":
-    # test_backward_astar()
+    test_backward_astar()
     # test_forward_astar()
-    test_adaptive_astar()
+    # test_adaptive_astar()
