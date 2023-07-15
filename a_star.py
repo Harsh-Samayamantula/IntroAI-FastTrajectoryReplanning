@@ -365,6 +365,51 @@ def set_tiebreak(larger_g):
     global TIEBREAK_LARGER 
     TIEBREAK_LARGER = larger_g
 
+def adaptive_astar(grid, agent_grid, start_cell, end_cell, max_iterations=10000):
+      # Initialize the states without the heuristic
+    start_state = State(start_cell[0], start_cell[1], g=0)
+    end_state = State(end_cell[0], end_cell[1])
+    agent_state = start_state
+    # Now that both states exist, we can calculate and set the heuristic
+   
+    while agent_state.x != end_state.x or agent_state.y != end_state.y:
+        start_state.h = adaptive_heuristic(start_state, end_state)
+        end_state.h = adaptive_heuristic(end_state, start_state)
+        
+        update_visbility(agent_state, grid, agent_grid)
+        open_list={agent_state}
+        closed_list=set()
+        path = compute_path(agent_grid, agent_state, end_state, open_list, closed_list, max_iterations)
+        if not path:
+            print("You've made a grave error. Max iterations reached")
+            return False
+        
+        agent_state = move_agent(agent_state, path, grid, agent_grid)
+        print_grid2(grid)
+    print("Destination reached")
+    return True
+
+def adaptive_heuristic(state, end_state):
+    # H(s) := g(s_goal)-g(s)
+    h = end_state.g - state.g 
+    return h
+
+def test_adaptive_astar():
+    valid_gridworlds_arr = []
+    while len(valid_gridworlds_arr) < 1:
+        x = GridWorld(101, 101)
+        x.make_grid()
+        x.is_valid_grid_world()
+        if(x.valid_grid_world):
+            valid_gridworlds_arr.append(x)
+
+    example_grid = valid_gridworlds_arr[0]
+    start_cell = (0, 0)
+    end_cell = (100, 100)
+    example_grid.print_grid()
+    adaptive_astar(example_grid.grid, example_grid.agent_grid, start_cell, end_cell)
+    
 if __name__ == "__main__":
     # test_backward_astar()
-    test_forward_astar()
+    # test_forward_astar()
+    test_adaptive_astar()
