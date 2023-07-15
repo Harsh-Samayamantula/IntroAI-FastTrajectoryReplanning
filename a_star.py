@@ -234,8 +234,6 @@ def forward_astar(grid, agent_grid, start_cell, end_cell, max_iterations=10000):
             return False
         
         agent_state = move_agent(agent_state, path, grid, agent_grid)
-        # if agent_state.x == end_state.x or agent_state.y == end_state.y:
-        #     print(f'OPEN LIST: {len(open_list)}\nCLOSED LIST: {len(closed_list)}')
     # print_grid2(grid)
     print("Destination reached")
     return True
@@ -244,83 +242,20 @@ def backward_astar(grid, agent_grid, start_cell, end_cell, max_iterations=10000)
     end_state = State(end_cell[0], end_cell[1], g=0)
 
     agent_state = start_state
-    # agent_state = end_state
     end_state.h = heuristic(start_state, end_state) # Compute heuristic after end_state is assigned.
-    # start_state.h = heuristic(start_state, end_state)
-
     update_visbility(agent_state, grid, agent_grid)
     while agent_state.x != end_state.x or agent_state.y != end_state.y:
-        open_list={agent_state}
-        # open_list = {end_state}
+        open_list = {end_state}
         closed_list=set()
-        # path = compute_path(agent_grid, end_state, agent_state, open_list, closed_list, max_iterations)
-        path = compute_path(agent_grid, agent_state, end_state, open_list, closed_list, max_iterations)
-        # print("OPEN")
-        # for s in open_list:
-        #     print(s.x, s.y)
-        # print("CLOSED")
-        # for s in closed_list:
-        #     print(s.x, s.y)  
-        # print_path(agent_grid, path)
+        path = compute_path(agent_grid, end_state, agent_state, open_list, closed_list, max_iterations)
         if not path:
             print("You've made a grave error. Max iterations reached")
             return False
-        
+        path.reverse()
         agent_state = move_agent(agent_state, path, grid, agent_grid)
-        # if agent_state.x == end_state.x or agent_state.y == end_state.y:
-        #     print(f'OPEN LIST: {len(open_list)}\nCLOSED LIST: {len(closed_list)}')
-    # print_grid2(grid)
+    print_grid2(grid)
     print("Destination reached")
     return True
-
-# def backward_astar(grid, start_cell, end_cell, max_iterations=10000):
-#     # Initialize start and end States
-#     start_state = State(start_cell[0], start_cell[1], g=0)
-#     end_state = State(end_cell[0], end_cell[1], g=np.inf, h=0)  # h is 0 for the goal state
-
-#     start_state.h = heuristic(start_state, end_state)
-
-#     # Open and closed lists, stored as sets for efficient search
-#     open_list = {start_state}
-#     closed_list = set()
-
-#     iterations = 0
-
-#     while open_list and iterations < max_iterations:
-#         # Pop a state with the smallest f-value
-#         current_state = min(open_list, key=lambda state: state.f)
-#         open_list.remove(current_state)
-
-#         if current_state.x == end_state.x and current_state.y == end_state.y:
-#             print("Target Reached")
-#             return reconstruct_path(current_state)
-
-#         closed_list.add(current_state)
-
-#         for neighbor in get_neighbors(current_state):
-#             if neighbor in closed_list:
-#                 continue
-#             tentative_g = current_state.g + 1  # assuming cost=1 for each step
-
-#             if neighbor not in open_list:
-#                 open_list.add(neighbor)
-#             elif tentative_g >= neighbor.g:
-#                 continue  # this is not a better path
-
-#             # This is the best path until now. Record it
-#             neighbor.parent = current_state
-#             neighbor.g = tentative_g
-#             neighbor.h = heuristic(neighbor, end_state)
-#             neighbor.f = neighbor.g + neighbor.h
-
-#         iterations += 1
-
-#     # No path found
-#     if iterations == max_iterations:
-#         print("Max Iterations Reached")
-#     else:
-#         print("No Path Found")
-#     return None
 
 def test_forward_astar():
     valid_gridworlds_arr = []
@@ -335,19 +270,6 @@ def test_forward_astar():
     start_cell = (0, 0)
     end_cell = (9, 9)
 
-    # example_grid_deep = copy.deepcopy(example_grid)
-    # example_grid.print_grid()
-
-    # with open('gridworlds.pkl', 'rb') as f:
-    #     retrieved_gridworlds_arr = pickle.load(f)
-    
-    # count = 0
-    # for grid in retrieved_gridworlds_arr:
-    #     forward_astar(grid.grid, grid.agent_grid, start_cell, end_cell)
-    #     print(f"Calculation to GRID #{count} is complete!")
-    #     count+=1
-    # gridworld = retrieved_gridworlds_arr[40]
-    
     forward_astar(example_grid.grid, example_grid.agent_grid, start_cell, end_cell)
     # print_grid2(example_grid.grid)
     print('TEST COMPLETE')
@@ -359,7 +281,7 @@ def test_forward_astar():
 def test_backward_astar():
     valid_gridworlds_arr = []
     while len(valid_gridworlds_arr) < 1:
-        x = GridWorld(100, 100)
+        x = GridWorld(20, 20)
         x.make_grid()
         x.is_valid_grid_world()
         if(x.valid_grid_world):
@@ -367,7 +289,7 @@ def test_backward_astar():
 
     example_grid = valid_gridworlds_arr[0]
     start_cell = (0,0)
-    end_cell = (99,99)
+    end_cell = (19,19)
     backward_astar(example_grid.grid, example_grid.agent_grid, start_cell, end_cell)
     # print_grid2(example_grid.grid)
     print('TEST COMPLETE')

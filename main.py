@@ -110,8 +110,8 @@ def main():
     # with open('adaptive_a.pkl', 'wb') as f:
     #     pickle.dump(adaptive_astar_speed, f)
 
-    # with open('backward_a.pkl', 'rb') as f:
-    #     backward_astar_speed = pickle.load(f)
+    with open('backward_a.pkl', 'rb') as f:
+        backward_astar_speed = pickle.load(f)
     with open('forward_a.pkl', 'rb') as f:
         forward_astar_speed = pickle.load(f)
     with open('forward_a_small.pkl', 'rb') as f:
